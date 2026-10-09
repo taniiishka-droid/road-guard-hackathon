@@ -1,408 +1,728 @@
-</div>
-    <div id="map"></div>
-  </div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#2563eb">
+<title>RoadGuard | Smart Civic Tracker</title>
+<style>
+:root{
+  --blue:#2563eb;--blue-dark:#173b8f;--blue-light:#eff6ff;
+  --white:#fff;--bg:#f5f8ff;--text:#172033;--muted:#64748b;
+  --border:#dbe5f2;--red:#dc2626;--orange:#ea580c;--green:#15803d;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,Helvetica,sans-serif}
+button,input,textarea,select{font:inherit}
+header{background:linear-gradient(120deg,#fff,#eaf2ff);border-bottom:1px solid var(--border);padding:19px 5%;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.brand{font-size:25px;font-weight:900;color:var(--blue-dark)}
+.brand span{color:var(--blue)}
+header p{margin:5px 0 0;color:var(--muted);font-size:13px}
+.header-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+main{max-width:1200px;margin:25px auto;padding:0 16px}
+.hero{padding:30px;border-radius:20px;background:linear-gradient(120deg,#dbeafe,#fff);border:1px solid #cfe0ff;margin-bottom:20px}
+.hero h1{font-size:clamp(28px,5vw,43px);margin:0 0 12px;color:var(--blue-dark)}
+.hero p{max-width:700px;color:#475569;line-height:1.65}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{background:#fff;border:1px solid var(--border);border-radius:20px;padding:7px 11px;font-size:12px;font-weight:bold}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:20px}
+.stat,.panel{background:var(--white);border:1px solid var(--border);border-radius:16px;padding:18px;box-shadow:0 5px 18px #1e3a8a08}
+.stat small{color:var(--muted)}.stat strong{display:block;font-size:30px;margin-top:9px}
+.layout{display:grid;grid-template-columns:minmax(0,0.9fr) minmax(0,1.3fr);gap:18px;align-items:start}
+h2{font-size:20px;margin:0 0 17px}
+.field{margin-bottom:14px}
+label{display:block;font-size:13px;font-weight:750;margin-bottom:7px}
+input:not([type=file]):not([type=checkbox]),textarea,select{width:100%;padding:11px;border:1px solid #cbd5e1;border-radius:10px;background:#fff;color:var(--text)}
+textarea{min-height:88px;resize:vertical}
+button,.btn{border:0;border-radius:10px;padding:11px 14px;font-weight:bold;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.primary{background:var(--blue);color:white}
+.secondary{background:var(--blue-light);color:var(--blue-dark);border:1px solid #dbeafe}
+.neutral{background:#f1f5f9;color:#334155}
+.red{background:#fee2e2;color:#991b1b}
+button:hover{filter:brightness(.97)}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.hint{font-size:12px;line-height:1.55;color:var(--muted)}
+.notice{padding:11px;border-radius:10px;background:#fff7ed;color:#9a3412;font-size:12px;line-height:1.55;margin:12px 0}
+.preview{width:100%;max-height:220px;object-fit:contain;background:#f1f5f9;border-radius:10px;margin-top:10px}
+.mapframe{width:100%;height:250px;border:1px solid var(--border);border-radius:12px}
+.toolbar{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}
+.issue{border:1px solid var(--border);background:#fff;border-radius:14px;padding:15px;margin-top:12px}
+.issue-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap}
+.issue h3{margin:8px 0;font-size:17px}
+.issue p{font-size:13px;color:#475569;line-height:1.55;overflow-wrap:anywhere}
+.issue img{max-width:100%;max-height:190px;border-radius:10px;margin-top:8px}
+.tag{display:inline-block;padding:5px 9px;border-radius:20px;font-size:11px;font-weight:bold;background:#e2e8f0;color:#334155}
+.tag.pending{background:#dbeafe;color:#1d4ed8}
+.tag.progress{background:#ffedd5;color:#9a3412}
+.tag.resolved{background:#dcfce7;color:#166534}
+.tag.high{background:#fee2e2;color:#991b1b}
+.tag.medium{background:#fef3c7;color:#92400e}
+.tag.low{background:#dcfce7;color:#166534}
+.issue-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+.issue-actions button{font-size:12px;padding:8px}
+.empty{text-align:center;padding:28px;color:var(--muted)}
+hr{border:0;border-top:1px solid var(--border);margin:18px 0}
+#toast{display:none;position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#172554;color:#fff;padding:12px 17px;border-radius:12px;z-index:99;max-width:90%;text-align:center}
+footer{text-align:center;color:var(--muted);font-size:12px;padding:25px 15px}
+a{color:var(--blue)}
+@media(max-width:800px){.layout{grid-template-columns:1fr}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.hero{padding:22px}}
+@media(max-width:400px){.toolbar{grid-template-columns:1fr}.stat,.panel{padding:14px}}
+</style>
+</head>
+<body>
 
-  <div class="card" id="reports">
-    <h2>📋 Community Reports</h2>
-    <input id="search" placeholder="🔍 Search reports..." oninput="renderReports()">
-    <div class="row">
-      <select id="filter-category" onchange="renderReports()">
-        <option value="">All categories</option>
-        <option>Pothole</option>
-        <option>Streetlight</option>
-        <option>Waterlogging</option>
-        <option>Traffic</option>
-        <option>Garbage</option>
-        <option>Footpath</option>
-        <option>Accident</option>
-        <option>Other</option>
-      </select>
-      <select id="filter-status" onchange="renderReports()">
-        <option value="">All statuses</option>
-        <option>Open</option>
-        <option>In Progress</option>
-        <option>Resolved</option>
-      </select>
-    </div>
-    <div id="report-list"></div>
-    <p id="empty-message">No reports yet. Be the first to report a hazard!</p>
-    <button class="secondary" onclick="exportReports()">⬇ Export Reports (JSON)</button>
-    <button class="secondary" onclick="clearReports()">Clear All Reports</button>
+<header>
+  <div>
+    <div class="brand">🛡️ Road<span>Guard</span></div>
+    <p id="tagline">Smarter streets. Safer communities.</p>
   </div>
-</section>
-</div>
+  <div class="header-right">
+    <label for="language" style="margin:0">🌐</label>
+    <select id="language" aria-label="Choose language" style="width:auto">
+      <option value="en">English</option>
+      <option value="hi">हिन्दी</option>
+      <option value="mr">मराठी</option>
+      <option value="kn">ಕನ್ನಡ</option>
+      <option value="ta">தமிழ்</option>
+      <option value="te">తెలుగు</option>
+    </select>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <h1 id="heroTitle">Report it. Track it. Fix it.</h1>
+    <p id="heroText">Help make roads safer by reporting potholes, broken streetlights, garbage, waterlogging and other civic hazards. Every useful report can help your community take action.</p>
+    <div class="chips">
+      <span class="chip">📍 GPS location</span>
+      <span class="chip">📸 Photo evidence</span>
+      <span class="chip">🎙️ Voice report</span>
+      <span class="chip">🗺️ Map navigation</span>
+    </div>
+  </section>
+
+  <section class="stats">
+    <div class="stat"><small id="totalLabel">Total reports</small><strong id="total">0</strong></div>
+    <div class="stat"><small id="pendingLabel">Pending</small><strong id="pending">0</strong></div>
+    <div class="stat"><small id="progressLabel">In progress</small><strong id="progress">0</strong></div>
+    <div class="stat"><small id="resolvedLabel">Resolved</small><strong id="resolved">0</strong></div>
+  </section>
+
+  <div class="layout">
+    <section class="panel">
+      <h2 id="formTitle">🚧 Report a civic issue</h2>
+      <form id="reportForm">
+        <div class="field">
+          <label id="categoryLabel" for="category">Issue category *</label>
+          <select id="category" required>
+            <option value="Pothole">🕳️ Pothole / damaged road</option>
+            <option value="Streetlight">💡 Broken streetlight</option>
+            <option value="Garbage">🗑️ Garbage / waste</option>
+            <option value="Waterlogging">🌊 Waterlogging / flooding</option>
+            <option value="Open drain">⚠️ Open drain / manhole</option>
+            <option value="Traffic signal">🚦 Traffic signal problem</option>
+            <option value="Fallen object">🌳 Fallen tree / object</option>
+            <option value="Other">📍 Other civic issue</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label id="locationLabel" for="location">Location / landmark *</label>
+          <input id="location" required placeholder="Street, area, nearby landmark">
+        </div>
+
+        <div class="actions" style="margin-bottom:14px">
+          <button type="button" class="secondary" id="gpsBtn">📍 Use my GPS</button>
+          <button type="button" class="secondary" id="mapBtn">🗺️ Find on map</button>
+        </div>
+        <p id="gpsStatus" class="hint">GPS works only when permission is granted and the site is served securely (HTTPS).</p>
+
+        <div class="field">
+          <label id="coordinatesLabel">GPS coordinates (optional)</label>
+          <input id="coordinates" readonly placeholder="Latitude, longitude will appear here">
+        </div>
+
+        <div class="field">
+          <label id="priorityLabel" for="priority">Priority *</label>
+          <select id="priority">
+            <option value="High">🔴 High — immediate safety risk</option>
+            <option value="Medium" selected>🟠 Medium — needs attention</option>
+            <option value="Low">🟢 Low — routine issue</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label id="descriptionLabel" for="description">Describe the problem *</label>
+          <textarea id="description" required maxlength="600" placeholder="What happened? Is it blocking the road or causing danger?"></textarea>
+          <div class="actions" style="margin-top:8px">
+            <button type="button" class="secondary" id="speechBtn">🗣️ Speak to type</button>
+            <button type="button" class="secondary" id="voiceBtn">🎙️ Start voice recording</button>
+          </div>
+          <p class="hint" id="voiceStatus">Voice features depend on your browser and microphone permission.</p>
+        </div>
+
+        <div class="field">
+          <label id="photoLabel" for="photo">Upload road / hazard photo</label>
+          <input id="photo" type="file" accept="image/*" capture="environment">
+          <img id="photoPreview" class="preview" alt="Selected issue photo preview" hidden>
+          <p class="hint">Tip: Take a clear photo from a safe place. Avoid photographing identifiable people unnecessarily.</p>
+        </div>
+
+        <div class="field">
+          <label id="afterLabel" for="afterPhoto">After-repair photo (optional)</label>
+          <input id="afterPhoto" type="file" accept="image/*" capture="environment">
+        </div>
+
+        <div class="notice" id="safetyNotice">Safety first: do not stand in traffic or approach an open manhole to take a photo. For immediate danger, contact the appropriate local emergency or civic authority.</div>
+
+        <button type="submit" class="primary" id="submitBtn" style="width:100%">＋ Submit report</button>
+      </form>
+
+      <hr>
+      <h2 id="audioTitle">🎧 Voice recording</h2>
+      <p class="hint" id="audioHelp">Record an audio description if supported. You can play it back or download it. The recording is not automatically sent to authorities.</p>
+      <audio id="audioPlayer" controls style="width:100%;display:none"></audio>
+      <div class="actions" style="margin-top:10px">
+        <button id="downloadAudio" class="secondary" type="button" hidden>⬇️ Download recording</button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2 id="listTitle">📋 Community issue tracker</h2>
+      <p class="hint" id="storageHint">Your reports are saved in this browser on this device. This demo does not sync reports between different users.</p>
+      <div class="toolbar">
+        <input id="search" placeholder="🔎 Search by location or report ID" aria-label="Search reports">
+        <select id="statusFilter" aria-label="Filter by status">
+          <option value="All">All statuses</option>
+          <option value="Pending">Pending</option>
+          <option value="In Progress">In Progress</option>
+          <option value="Resolved">Resolved</option>
+        </select>
+        <select id="categoryFilter" aria-label="Filter by category">
+          <option value="All">All categories</option>
+          <option value="Pothole">Pothole / road</option>
+          <option value="Streetlight">Streetlight</option>
+          <option value="Garbage">Garbage</option>
+          <option value="Waterlogging">Waterlogging</option>
+          <option value="Open drain">Open drain</option>
+          <option value="Traffic signal">Traffic signal</option>
+          <option value="Fallen object">Fallen tree / object</option>
+          <option value="Other">Other</option>
+        </select>
+        <button class="secondary" id="exportBtn" type="button">⬇️ Export reports</button>
+      </div>
+      <div class="actions">
+        <button class="secondary" id="mapAllBtn" type="button">🗺️ View locations on map</button>
+        <button class="secondary" id="clearFilters" type="button">Clear filters</button>
+      </div>
+      <div id="reportList"></div>
+      <hr>
+      <h2 id="mapTitle">🗺️ Report location map</h2>
+      <p class="hint" id="mapHint">Select a report's map button to open its location in OpenStreetMap.</p>
+      <iframe id="mapFrame" class="mapframe" title="Map of reported issue locations" loading="lazy" referrerpolicy="no-referrer" src="https://www.openstreetmap.org/export/embed.html?bbox=77.45%2C12.85%2C77.75%2C13.15&layer=mapnik"></iframe>
+      <p><a id="openMap" href="https://www.openstreetmap.org/" target="_blank" rel="noopener noreferrer">Open full map ↗️</a></p>
+    </section>
+  </div>
 </main>
 
 <footer>
-  <strong>🛡️ RoadGuard</strong>
-  <p>Small reports. Safer roads. Stronger communities.</p>
-  <p class="small">Student hackathon prototype · Verify hazards before acting on them.</p>
+  <strong>RoadGuard</strong> — Technology for safer streets 💙
+  <br><br>
+  <span id="footerText">Student hackathon prototype. Reports are not automatically delivered to government departments.</span>
 </footer>
+<div id="toast" role="status" aria-live="polite"></div>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-const STORAGE_KEY = "roadguard_reports_v1";
+const $ = id => document.getElementById(id);
+const DB_KEY = "roadguard_reports_v3";
+
+const translations = {
+en:{
+tagline:"Smarter streets. Safer communities.",heroTitle:"Report it. Track it. Fix it.",
+heroText:"Help make roads safer by reporting potholes, broken streetlights, garbage, waterlogging and other civic hazards.",
+total:"Total reports",pending:"Pending",progress:"In progress",resolved:"Resolved",
+form:"🚧 Report a civic issue",category:"Issue category *",location:"Location / landmark *",
+coordinates:"GPS coordinates (optional)",priority:"Priority *",description:"Describe the problem *",
+photo:"Upload road / hazard photo",after:"After-repair photo (optional)",submit:"＋ Submit report",
+list:"📋 Community issue tracker",storage:"Reports are saved in this browser on this device. This demo does not sync reports between users.",
+search:"🔎 Search by location or report ID",mapTitle:"🗺️ Report location map",mapHint:"Select a report's map button to open its location in OpenStreetMap.",
+audioTitle:"🎧 Voice recording",audioHelp:"Record an audio description if supported. Play it back or download it.",
+footer:"Student hackathon prototype. Reports are not automatically delivered to government departments.",
+gps:"📍 Use my GPS",findMap:"🗺️ Find on map",speak:"🗣️ Speak to type",record:"🎙️ Start voice recording",
+stop:"⏹️ Stop recording",download:"⬇️ Download recording",export:"⬇️ Export reports",
+all:"All statuses",allCats:"All categories",clear:"Clear filters",viewMap:"🗺️ View locations on map",
+safety:"Safety first: do not stand in traffic or approach an open manhole to take a photo. For immediate danger, contact the appropriate local emergency or civic authority.",
+noReports:"No reports found. Be the first to report a local issue!",
+report:"Report",status:"Status",priorityHigh:"High",priorityMedium:"Medium",priorityLow:"Low",
+map:"Open map",next:"Next status",delete:"Delete",photoAfter:"After-repair photo",saved:"Report saved on this device!",
+needLocation:"Please enter a location.",needDescription:"Please describe the issue.",gpsSuccess:"GPS location added.",gpsError:"Could not get location. Check permission and try again.",
+noSpeech:"Speech-to-text is not supported by this browser. Try Chrome.",listening:"Listening… speak now.",speechError:"Speech recognition stopped or was unavailable.",
+recording:"Recording… press Stop when finished.",recordDone:"Recording ready.",noMic:"Microphone recording is unavailable. Check browser support and permissions.",
+duplicate:"Possible duplicate: a report for this location already exists.",exportDone:"Report data exported.",deleted:"Report deleted.",statusChanged:"Report status updated.",
+photoError:"Could not process this image. Try another photo.",mapEmpty:"No reports have GPS coordinates yet.",
+submitted:"Report submitted. Save or export your data regularly."
+},
+hi:{
+tagline:"बेहतर सड़कें। सुरक्षित समुदाय।",heroTitle:"रिपोर्ट करें। ट्रैक करें। सुधारें।",
+heroText:"गड्ढों, खराब स्ट्रीट लाइट, कचरे, जलभराव और अन्य समस्याओं की रिपोर्ट करके सड़कों को सुरक्षित बनाने में मदद करें।",
+total:"कुल रिपोर्ट",pending:"लंबित",progress:"काम जारी",resolved:"हल हो चुके",
+form:"🚧 नागरिक समस्या रिपोर्ट करें",category:"समस्या का प्रकार *",location:"जगह / पहचान का स्थान *",
+coordinates:"GPS निर्देशांक (वैकल्पिक)",priority:"प्राथमिकता *",description:"समस्या का विवरण *",
+photo:"सड़क / समस्या की फोटो",after:"मरम्मत के बाद की फोटो (वैकल्पिक)",submit:"＋ रिपोर्ट जमा करें",
+list:"📋 नागरिक समस्या ट्रैकर",storage:"रिपोर्ट इस डिवाइस के ब्राउज़र में सेव होती हैं। दूसरे यूज़र्स के साथ सिंक नहीं होतीं।",
+search:"🔎 जगह या रिपोर्ट ID खोजें",mapTitle:"🗺️ रिपोर्ट का नक्शा",mapHint:"रिपोर्ट के नक्शे वाले बटन से OpenStreetMap में जगह खोलें।",
+audioTitle:"🎧 आवाज़ रिकॉर्डिंग",audioHelp:"ब्राउज़र सपोर्ट करे तो आवाज़ रिकॉर्ड करें, सुनें या डाउनलोड करें।",
+footer:"स्टूडेंट हैकाथॉन प्रोटोटाइप। रिपोर्ट अपने आप सरकारी विभागों को नहीं भेजी जाती।",
+gps:"📍 मेरी लोकेशन",findMap:"🗺️ नक्शे पर खोजें",speak:"🗣️ बोलकर लिखें",record:"🎙️ रिकॉर्डिंग शुरू करें",
+stop:"⏹️ रिकॉर्डिंग रोकें",download:"⬇️ रिकॉर्डिंग डाउनलोड करें",export:"⬇️ रिपोर्ट एक्सपोर्ट करें",
+all:"सभी स्टेटस",allCats:"सभी प्रकार",clear:"फ़िल्टर हटाएँ",viewMap:"🗺️ लोकेशन नक्शे पर देखें",
+safety:"सुरक्षा पहले: फोटो लेने के लिए ट्रैफिक में न जाएँ और खुले मैनहोल के पास न जाएँ। तुरंत खतरे में स्थानीय आपातकालीन या नागरिक प्राधिकरण से संपर्क करें।",
+noReports:"कोई रिपोर्ट नहीं मिली। पहली रिपोर्ट आप करें!",
+report:"रिपोर्ट",status:"स्थिति",priorityHigh:"उच्च",priorityMedium:"मध्यम",priorityLow:"कम",
+map:"नक्शा खोलें",next:"अगली स्थिति",delete:"हटाएँ",photoAfter:"मरम्मत के बाद की फोटो",saved:"रिपोर्ट इस डिवाइस पर सेव हुई!",
+needLocation:"कृपया लोकेशन लिखें।",needDescription:"कृपया समस्या का विवरण लिखें।",gpsSuccess:"GPS लोकेशन जोड़ दी गई।",
+gpsError:"लोकेशन नहीं मिली। अनुमति जाँचें।",noSpeech:"इस ब्राउज़र में स्पीच-टू-टेक्स्ट उपलब्ध नहीं है। Chrome आज़माएँ।",
+listening:"सुन रहा है… अब बोलें।",speechError:"वॉइस पहचान बंद हो गई या उपलब्ध नहीं है।",
+recording:"रिकॉर्डिंग जारी… पूरी होने पर Stop दबाएँ।",recordDone:"रिकॉर्डिंग तैयार है।",noMic:"माइक उपलब्ध नहीं है। अनुमति और ब्राउज़र सपोर्ट जाँचें।",
+duplicate:"संभवतः इसी लोकेशन की रिपोर्ट पहले मौजूद है।",exportDone:"रिपोर्ट डेटा एक्सपोर्ट हो गया।",deleted:"रिपोर्ट हटा दी गई।",
+statusChanged:"रिपोर्ट की स्थिति बदल गई।",photoError:"फोटो प्रोसेस नहीं हुई। दूसरी फोटो आज़माएँ।",
+mapEmpty:"अभी किसी रिपोर्ट में GPS निर्देशांक नहीं हैं।",submitted:"रिपोर्ट जमा हुई। अपना डेटा नियमित रूप से सेव या एक्सपोर्ट करें।"
+},
+mr:{
+tagline:"चांगले रस्ते. सुरक्षित समाज.",heroTitle:"नोंदवा. ट्रॅक करा. सुधारणा करा.",
+heroText:"खड्डे, बंद पथदिवे, कचरा, पाणी साचणे आणि इतर नागरी समस्यांची नोंद करून रस्ते सुरक्षित बनवण्यास मदत करा.",
+total:"एकूण अहवाल",pending:"प्रलंबित",progress:"काम सुरू",resolved:"सोडवलेले",
+form:"🚧 नागरी समस्या नोंदवा",category:"समस्येचा प्रकार *",location:"ठिकाण / जवळची खूण *",
+coordinates:"GPS निर्देशांक (ऐच्छिक)",priority:"प्राधान्य *",description:"समस्येचे वर्णन *",
+photo:"रस्ता / समस्येचा फोटो",after:"दुरुस्तीनंतरचा फोटो (ऐच्छिक)",submit:"＋ अहवाल सबमिट करा",
+list:"📋 नागरी समस्या ट्रॅकर",storage:"अहवाल या डिव्हाइसच्या ब्राउझरमध्ये सेव्ह होतात. इतर वापरकर्त्यांशी सिंक होत नाहीत.",
+search:"🔎 ठिकाण किंवा रिपोर्ट ID शोधा",mapTitle:"🗺️ अहवालाचे नकाशावरील ठिकाण",mapHint:"OpenStreetMap वर ठिकाण पाहण्यासाठी अहवालातील नकाशा बटण वापरा.",
+audioTitle:"🎧 आवाज रेकॉर्डिंग",audioHelp:"ब्राउझरने समर्थन दिल्यास आवाज रेकॉर्ड करा, ऐका किंवा डाउनलोड करा.",
+footer:"विद्यार्थी हॅकाथॉन प्रोटोटाइप. अहवाल आपोआप सरकारी विभागांना पाठवले जात नाहीत.",
+gps:"📍 माझे GPS",findMap:"🗺️ नकाशावर शोधा",speak:"🗣️ बोलून लिहा",record:"🎙️ रेकॉर्डिंग सुरू करा",
+stop:"⏹️ रेकॉर्डिंग थांबवा",download:"⬇️ रेकॉर्डिंग डाउनलोड करा",export:"⬇️ अहवाल एक्सपोर्ट करा",
+all:"सर्व स्थिती",allCats:"सर्व प्रकार",clear:"फिल्टर काढा",viewMap:"🗺️ ठिकाणे नकाशावर पाहा",
+safety:"सुरक्षितता प्रथम: फोटो काढण्यासाठी वाहतुकीत जाऊ नका किंवा उघड्या मॅनहोलजवळ जाऊ नका. तातडीच्या धोक्यात स्थानिक आपत्कालीन किंवा नागरी अधिकाऱ्यांशी संपर्क साधा.",
+noReports:"अहवाल सापडला नाही. पहिला अहवाल नोंदवा!",
+report:"अहवाल",status:"स्थिती",priorityHigh:"उच्च",priorityMedium:"मध्यम",priorityLow:"कमी",
+map:"नकाशा उघडा",next:"पुढील स्थिती",delete:"हटवा",photoAfter:"दुरुस्तीनंतरचा फोटो",saved:"अहवाल या डिव्हाइसवर सेव्ह झाला!",
+needLocation:"कृपया ठिकाण लिहा.",needDescription:"कृपया समस्येचे वर्णन लिहा.",gpsSuccess:"GPS ठिकाण जोडले.",
+gpsError:"ठिकाण मिळाले नाही. परवानगी तपासा.",noSpeech:"या ब्राउझरमध्ये आवाजातून मजकूर उपलब्ध नाही. Chrome वापरून पाहा.",
+listening:"ऐकत आहे… आता बोला.",speechError:"आवाज ओळख बंद झाली किंवा उपलब्ध नाही.",
+recording:"रेकॉर्डिंग सुरू आहे… पूर्ण झाल्यावर Stop दाबा.",recordDone:"रेकॉर्डिंग तयार आहे.",noMic:"मायक्रोफोन उपलब्ध नाही. परवानगी तपासा.",
+duplicate:"या ठिकाणाचा संभाव्य डुप्लिकेट अहवाल आहे.",exportDone:"अहवाल एक्सपोर्ट झाले.",deleted:"अहवाल हटवला.",
+statusChanged:"अहवालाची स्थिती बदलली.",photoError:"फोटो प्रक्रिया झाली नाही. दुसरा फोटो वापरा.",
+mapEmpty:"अजून कोणत्याही अहवालात GPS निर्देशांक नाहीत.",submitted:"अहवाल सबमिट झाला. डेटा नियमित सेव्ह किंवा एक्सपोर्ट करा."
+},
+kn:{
+tagline:"ಉತ್ತಮ ರಸ್ತೆಗಳು. ಸುರಕ್ಷಿತ ಸಮುದಾಯಗಳು.",heroTitle:"ವರದಿ ಮಾಡಿ. ಟ್ರ್ಯಾಕ್ ಮಾಡಿ. ಸರಿಪಡಿಸಿ.",
+heroText:"ಗುಂಡಿಗಳು, ಕೆಟ್ಟ ಬೀದಿ ದೀಪಗಳು, ಕಸ, ನೀರು ನಿಲ್ಲುವಿಕೆ ಮತ್ತು ಇತರ ನಾಗರಿಕ ಸಮಸ್ಯೆಗಳನ್ನು ವರದಿ ಮಾಡಿ.",
+total:"ಒಟ್ಟು ವರದಿಗಳು",pending:"ಬಾಕಿ",progress:"ಪ್ರಗತಿಯಲ್ಲಿದೆ",resolved:"ಪರಿಹರಿಸಲಾಗಿದೆ",
+form:"🚧 ನಾಗರಿಕ ಸಮಸ್ಯೆ ವರದಿ ಮಾಡಿ",category:"ಸಮಸ್ಯೆಯ ಪ್ರಕಾರ *",location:"ಸ್ಥಳ / ಹತ್ತಿರದ ಗುರುತು *",
+coordinates:"GPS ನಿರ್ದೇಶಾಂಕಗಳು (ಐಚ್ಛಿಕ)",priority:"ಆದ್ಯತೆ *",description:"ಸಮಸ್ಯೆಯ ವಿವರಣೆ *",
+photo:"ರಸ್ತೆ / ಸಮಸ್ಯೆಯ ಫೋಟೋ",after:"ದುರಸ್ತಿಯ ನಂತರದ ಫೋಟೋ (ಐಚ್ಛಿಕ)",submit:"＋ ವರದಿ ಸಲ್ಲಿಸಿ",
+list:"📋 ನಾಗರಿಕ ಸಮಸ್ಯೆ ಟ್ರ್ಯಾಕರ್",storage:"ವರದಿಗಳು ಈ ಸಾಧನದ ಬ್ರೌಸರ್‌ನಲ್ಲಿ ಉಳಿಯುತ್ತವೆ. ಇತರ ಬಳಕೆದಾರರೊಂದಿಗೆ ಸಿಂಕ್ ಆಗುವುದಿಲ್ಲ.",
+search:"🔎 ಸ್ಥಳ ಅಥವಾ ವರದಿ ID ಹುಡುಕಿ",mapTitle:"🗺️ ವರದಿಯ ನಕ್ಷೆ",mapHint:"OpenStreetMap ನಲ್ಲಿ ಸ್ಥಳ ತೆರೆಯಲು ವರದಿಯ ನಕ್ಷೆ ಬಟನ್ ಒತ್ತಿ.",
+audioTitle:"🎧 ಧ್ವನಿ ರೆಕಾರ್ಡಿಂಗ್",audioHelp:"ಬ್ರೌಸರ್ ಬೆಂಬಲಿಸಿದರೆ ಧ್ವನಿ ರೆಕಾರ್ಡ್ ಮಾಡಿ, ಕೇಳಿ ಅಥವಾ ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ.",
+footer:"ವಿದ್ಯಾರ್ಥಿ ಹ್ಯಾಕಥಾನ್ ಮಾದರಿ. ವರದಿಗಳು ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಸರ್ಕಾರಿ ಇಲಾಖೆಗೆ ಕಳುಹಿಸಲಾಗುವುದಿಲ್ಲ.",
+gps:"📍 ನನ್ನ GPS",findMap:"🗺️ ನಕ್ಷೆಯಲ್ಲಿ ಹುಡುಕಿ",speak:"🗣️ ಮಾತನಾಡಿ ಟೈಪ್ ಮಾಡಿ",record:"🎙️ ರೆಕಾರ್ಡಿಂಗ್ ಪ್ರಾರಂಭಿಸಿ",
+stop:"⏹️ ರೆಕಾರ್ಡಿಂಗ್ ನಿಲ್ಲಿಸಿ",download:"⬇️ ರೆಕಾರ್ಡಿಂಗ್ ಡೌನ್‌ಲೋಡ್",export:"⬇️ ವರದಿಗಳನ್ನು ರಫ್ತು ಮಾಡಿ",
+all:"ಎಲ್ಲಾ ಸ್ಥಿತಿಗಳು",allCats:"ಎಲ್ಲಾ ವಿಭಾಗಗಳು",clear:"ಫಿಲ್ಟರ್ ತೆರವು",viewMap:"🗺️ ಸ್ಥಳಗಳನ್ನು ನಕ್ಷೆಯಲ್ಲಿ ನೋಡಿ",
+safety:"ಸುರಕ್ಷತೆ ಮೊದಲು: ಫೋಟೋ ತೆಗೆದುಕೊಳ್ಳಲು ವಾಹನ ಸಂಚಾರದ ಮಧ್ಯೆ ನಿಲ್ಲಬೇಡಿ ಅಥವಾ ತೆರೆದ ಮ್ಯಾನ್‌ಹೋಲ್ ಹತ್ತಿರ ಹೋಗಬೇಡಿ. ತುರ್ತು ಅಪಾಯವಿದ್ದರೆ ಸ್ಥಳೀಯ ಅಧಿಕಾರಿಗಳನ್ನು ಸಂಪರ್ಕಿಸಿ.",
+noReports:"ವರದಿಗಳು ಕಂಡುಬಂದಿಲ್ಲ. ಮೊದಲ ವರದಿ ನೀಡಿ!",
+report:"ವರದಿ",status:"ಸ್ಥಿತಿ",priorityHigh:"ಹೆಚ್ಚು",priorityMedium:"ಮಧ್ಯಮ",priorityLow:"ಕಡಿಮೆ",
+map:"ನಕ್ಷೆ ತೆರೆಯಿರಿ",next:"ಮುಂದಿನ ಸ್ಥಿತಿ",delete:"ಅಳಿಸಿ",photoAfter:"ದುರಸ್ತಿಯ ನಂತರದ ಫೋಟೋ",saved:"ವರದಿ ಈ ಸಾಧನದಲ್ಲಿ ಉಳಿಸಲಾಗಿದೆ!",
+needLocation:"ದಯವಿಟ್ಟು ಸ್ಥಳ ನಮೂದಿಸಿ.",needDescription:"ದಯವಿಟ್ಟು ಸಮಸ್ಯೆಯನ್ನು ವಿವರಿಸಿ.",gpsSuccess:"GPS ಸ್ಥಳ ಸೇರಿಸಲಾಗಿದೆ.",
+gpsError:"ಸ್ಥಳ ಸಿಗಲಿಲ್ಲ. ಅನುಮತಿ ಪರಿಶೀಲಿಸಿ.",noSpeech:"ಈ ಬ್ರೌಸರ್‌ನಲ್ಲಿ ಧ್ವನಿ-ಪಠ್ಯ ಬೆಂಬಲವಿಲ್ಲ. Chrome ಪ್ರಯತ್ನಿಸಿ.",
+listening:"ಕೇಳುತ್ತಿದೆ… ಈಗ ಮಾತನಾಡಿ.",speechError:"ಧ್ವನಿ ಗುರುತಿಸುವಿಕೆ ಲಭ್ಯವಿಲ್ಲ.",
+recording:"ರೆಕಾರ್ಡಿಂಗ್ ನಡೆಯುತ್ತಿದೆ… ಮುಗಿದಾಗ Stop ಒತ್ತಿ.",recordDone:"ರೆಕಾರ್ಡಿಂಗ್ ಸಿದ್ಧವಾಗಿದೆ.",noMic:"ಮೈಕ್ರೋಫೋನ್ ಲಭ್ಯವಿಲ್ಲ. ಅನುಮತಿ ಪರಿಶೀಲಿಸಿ.",
+duplicate:"ಈ ಸ್ಥಳಕ್ಕೆ ಈಗಾಗಲೇ ವರದಿ ಇರಬಹುದು.",exportDone:"ವರದಿ ಡೇಟಾ ರಫ್ತು ಮಾಡಲಾಗಿದೆ.",deleted:"ವರದಿ ಅಳಿಸಲಾಗಿದೆ.",
+statusChanged:"ವರದಿ ಸ್ಥಿತಿ ಬದಲಿಸಲಾಗಿದೆ.",photoError:"ಫೋಟೋ ಪ್ರಕ್ರಿಯೆ ಆಗಲಿಲ್ಲ. ಬೇರೆ ಫೋಟೋ ಪ್ರಯತ್ನಿಸಿ.",
+mapEmpty:"ಇನ್ನೂ GPS ಹೊಂದಿರುವ ವರದಿಗಳಿಲ್ಲ.",submitted:"ವರದಿ ಸಲ್ಲಿಸಲಾಗಿದೆ. ಡೇಟಾವನ್ನು ನಿಯಮಿತವಾಗಿ ರಫ್ತು ಮಾಡಿ."
+},
+ta:{
+tagline:"சிறந்த சாலைகள். பாதுகாப்பான சமூகம்.",heroTitle:"புகாரளிக்கவும். கண்காணிக்கவும். சரிசெய்யவும்.",
+heroText:"சாலைக் குழிகள், தெருவிளக்கு பழுதுகள், குப்பை, நீர் தேக்கம் போன்ற பிரச்சினைகளைப் புகாரளிக்கவும்.",
+total:"மொத்த புகார்கள்",pending:"நிலுவை",progress:"நடைபெறுகிறது",resolved:"தீர்க்கப்பட்டது",
+form:"🚧 குடிமைப் பிரச்சினையைப் புகாரளிக்கவும்",category:"பிரச்சினை வகை *",location:"இடம் / அருகிலுள்ள அடையாளம் *",
+coordinates:"GPS ஆயத்தொலைவுகள் (விருப்பம்)",priority:"முன்னுரிமை *",description:"பிரச்சினையின் விளக்கம் *",
+photo:"சாலை / பிரச்சினைப் புகைப்படம்",after:"சீரமைப்புக்குப் பிந்தைய புகைப்படம்",submit:"＋ புகாரைச் சமர்ப்பிக்கவும்",
+list:"📋 குடிமைப் பிரச்சினை கண்காணிப்பு",storage:"புகார்கள் இந்தச் சாதனத்தின் உலாவியில் சேமிக்கப்படும்; பிற பயனர்களுடன் ஒத்திசைக்கப்படாது.",
+search:"🔎 இடம் அல்லது புகார் ID தேடவும்",mapTitle:"🗺️ புகார் இட வரைபடம்",mapHint:"OpenStreetMap-இல் இடத்தைத் திறக்க புகாரின் வரைபட பொத்தானைப் பயன்படுத்தவும்.",
+audioTitle:"🎧 குரல் பதிவு",audioHelp:"உலாவி ஆதரித்தால் குரலைப் பதிவு செய்து கேட்கலாம் அல்லது பதிவிறக்கலாம்.",
+footer:"மாணவர் ஹேக்கத்தான் மாதிரி. புகார்கள் தானாக அரசு துறைகளுக்கு அனுப்பப்படாது.",
+gps:"📍 எனது GPS",findMap:"🗺️ வரைபடத்தில் தேடவும்",speak:"🗣️ பேசி தட்டச்சு செய்யவும்",record:"🎙️ பதிவைத் தொடங்கவும்",
+stop:"⏹️ பதிவை நிறுத்தவும்",download:"⬇️ பதிவைப் பதிவிறக்கவும்",export:"⬇️ புகார்களை ஏற்றுமதி செய்யவும்",
+all:"அனைத்து நிலைகள்",allCats:"அனைத்து வகைகள்",clear:"வடிகட்டிகளை அழிக்கவும்",viewMap:"🗺️ இடங்களை வரைபடத்தில் காணவும்",
+safety:"பாதுகாப்பே முதன்மை: புகைப்படம் எடுக்க போக்குவரத்தில் நிற்காதீர்கள் அல்லது திறந்த மேன்ஹோல் அருகே செல்லாதீர்கள். உடனடி ஆபத்தில் உள்ளூர் அதிகாரிகளைத் தொடர்புகொள்ளவும்.",
+noReports:"புகார்கள் இல்லை. முதல் புகாரை அளிக்கவும்!",
+report:"புகார்",status:"நிலை",priorityHigh:"உயர்",priorityMedium:"நடுத்தரம்",priorityLow:"குறைவு",
+map:"வரைபடத்தைத் திற",next:"அடுத்த நிலை",delete:"நீக்கு",photoAfter:"சீரமைப்புக்குப் பிந்தைய புகைப்படம்",saved:"புகார் இந்தச் சாதனத்தில் சேமிக்கப்பட்டது!",
+needLocation:"இடத்தை உள்ளிடவும்.",needDescription:"பிரச்சினையை விவரிக்கவும்.",gpsSuccess:"GPS இடம் சேர்க்கப்பட்டது.",
+gpsError:"இடத்தைக் கண்டறிய முடியவில்லை. அனுமதியைச் சரிபார்க்கவும்.",noSpeech:"இந்த உலாவியில் குரல்-உரை வசதி இல்லை. Chrome முயற்சிக்கவும்.",
+listening:"கேட்கிறது… இப்போது பேசவும்.",speechError:"குரல் அடையாளம் கிடைக்கவில்லை.",
+recording:"பதிவு நடைபெறுகிறது… முடிந்ததும் Stop அழுத்தவும்.",recordDone:"பதிவு தயார்.",noMic:"மைக்ரோஃபோன் கிடைக்கவில்லை. அனுமதியைச் சரிபார்க்கவும்.",
+duplicate:"இந்த இடத்திற்கு ஏற்கெனவே புகார் இருக்கலாம்.",exportDone:"புகார் தரவு ஏற்றுமதி செய்யப்பட்டது.",deleted:"புகார் நீக்கப்பட்டது.",
+statusChanged:"புகார் நிலை மாற்றப்பட்டது.",photoError:"புகைப்படத்தைச் செயலாக்க முடியவில்லை. வேறு புகைப்படத்தை முயற்சிக்கவும்.",
+mapEmpty:"இதுவரை GPS இடமுள்ள புகார்கள் இல்லை.",submitted:"புகார் சமர்ப்பிக்கப்பட்டது. தரவை அடிக்கடி ஏற்றுமதி செய்யவும்."
+},
+te:{
+tagline:"మెరుగైన రహదారులు. సురక్షిత సమాజాలు.",heroTitle:"నివేదించండి. ట్రాక్ చేయండి. పరిష్కరించండి.",
+heroText:"గుంతలు, వీధి దీపాల సమస్యలు, చెత్త, నీరు నిలిచిపోవడం వంటి పౌర సమస్యలను నివేదించండి.",
+total:"మొత్తం నివేదికలు",pending:"పెండింగ్",progress:"పనిలో ఉంది",resolved:"పరిష్కరించబడింది",
+form:"🚧 పౌర సమస్యను నివేదించండి",category:"సమస్య రకం *",location:"ప్రదేశం / సమీప గుర్తు *",
+coordinates:"GPS కోఆర్డినేట్లు (ఐచ్ఛికం)",priority:"ప్రాధాన్యత *",description:"సమస్య వివరాలు *",
+photo:"రోడ్డు / సమస్య ఫోటో",after:"మరమ్మత్తు తర్వాత ఫోటో",submit:"＋ నివేదిక సమర్పించండి",
+list:"📋 పౌర సమస్య ట్రాకర్",storage:"నివేదికలు ఈ పరికరం బ్రౌజర్‌లో సేవ్ అవుతాయి. ఇతర వినియోగదారులతో సింక్ కావు.",
+search:"🔎 ప్రదేశం లేదా నివేదిక ID వెతకండి",mapTitle:"🗺️ నివేదిక మ్యాప్",mapHint:"OpenStreetMapలో ప్రదేశాన్ని తెరవడానికి మ్యాప్ బటన్‌ను ఎంచుకోండి.",
+audioTitle:"🎧 వాయిస్ రికార్డింగ్",audioHelp:"బ్రౌజర్ మద్దతిస్తే వాయిస్‌ను రికార్డ్ చేసి వినండి లేదా డౌన్‌లోడ్ చేయండి.",
+footer:"విద్యార్థి హ్యాకథాన్ నమూనా. నివేదికలు ప్రభుత్వ విభాగాలకు ఆటోమేటిక్‌గా పంపబడవు.",
+gps:"📍 నా GPS",findMap:"🗺️ మ్యాప్‌లో వెతకండి",speak:"🗣️ మాట్లాడి టైప్ చేయండి",record:"🎙️ రికార్డింగ్ ప్రారంభించండి",
+stop:"⏹️ రికార్డింగ్ ఆపండి",download:"⬇️ రికార్డింగ్ డౌన్‌లోడ్",export:"⬇️ నివేదికలను ఎగుమతి చేయండి",
+all:"అన్ని స్థితులు",allCats:"అన్ని వర్గాలు",clear:"ఫిల్టర్లు తొలగించండి",viewMap:"🗺️ మ్యాప్‌లో ప్రదేశాలు చూడండి",
+safety:"భద్రత ముఖ్యం: ఫోటో కోసం ట్రాఫిక్‌లో నిలబడకండి లేదా తెరిచి ఉన్న మ్యాన్‌హోల్ దగ్గరకు వెళ్లకండి. తక్షణ ప్రమాదంలో స్థానిక అధికారులను సంప్రదించండి.",
+noReports:"నివేదికలు లేవు. మొదటి నివేదిక ఇవ్వండి!",
+report:"నివేదిక",status:"స్థితి",priorityHigh:"అధికం",priorityMedium:"మధ్యస్థం",priorityLow:"తక్కువ",
+map:"మ్యాప్ తెరవండి",next:"తదుపరి స్థితి",delete:"తొలగించండి",photoAfter:"మరమ్మత్తు తర్వాత ఫోటో",saved:"నివేదిక ఈ పరికరంలో సేవ్ అయింది!",
+needLocation:"దయచేసి ప్రదేశాన్ని నమోదు చేయండి.",needDescription:"దయచేసి సమస్యను వివరించండి.",gpsSuccess:"GPS ప్రదేశం జోడించబడింది.",
+gpsError:"ప్రదేశం పొందలేకపోయాం. అనుమతిని తనిఖీ చేయండి.",noSpeech:"ఈ బ్రౌజర్‌లో వాయిస్-టు-టెక్స్ట్ అందుబాటులో లేదు. Chrome ప్రయత్నించండి.",
+listening:"వింటోంది… ఇప్పుడు మాట్లాడండి.",speechError:"వాయిస్ గుర్తింపు అందుబాటులో లేదు.",
+recording:"రికార్డింగ్ జరుగుతోంది… పూర్తయ్యాక Stop నొక్కండి.",recordDone:"రికార్డింగ్ సిద్ధంగా ఉంది.",noMic:"మైక్రోఫోన్ అందుబాటులో లేదు. అనుమతిని తనిఖీ చేయండి.",
+duplicate:"ఈ ప్రదేశానికి ఇదివరకే నివేదిక ఉండవచ్చు.",exportDone:"నివేదిక డేటా ఎగుమతి అయింది.",deleted:"నివేదిక తొలగించబడింది.",
+statusChanged:"నివేదిక స్థితి మార్చబడింది.",photoError:"ఫోటోను ప్రాసెస్ చేయలేకపోయాం. మరో ఫోటో ప్రయత్నించండి.",
+mapEmpty:"ఇంకా GPS ఉన్న నివేదికలు లేవు.",submitted:"నివేదిక సమర్పించబడింది. డేటాను తరచూ ఎగుమతి చేయండి."
+}
+};
+
 let reports = [];
-let currentPosition = null;
-let photoData = "";
-let map = null;
-let reportMarkers = [];
-let userMarker = null;
+try { reports = JSON.parse(localStorage.getItem(DB_KEY) || "[]"); } catch(e) { reports=[]; }
+let selectedPhoto = "";
+let selectedAfterPhoto = "";
+let audioBlob = null;
+let audioUrl = "";
+let mediaRecorder = null;
+let audioChunks = [];
+let isRecording = false;
+let recognition = null;
+let lastCoords = null;
+let currentLang = "en";
 
-try {
-  reports = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-  if (!Array.isArray(reports)) reports = [];
-} catch (e) {
-  reports = [];
+function t(key){
+  return (translations[currentLang] && translations[currentLang][key]) ||
+         translations.en[key] || key;
 }
-
-function saveReports() {
+function toast(message){
+  const el=$("toast"); el.textContent=message; el.style.display="block";
+  clearTimeout(toast.timer); toast.timer=setTimeout(()=>el.style.display="none",3000);
+}
+function safeSave(){
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(reports));
-  } catch (e) {
-    alert("Storage is full. Try removing photos or exporting your reports.");
+    localStorage.setItem(DB_KEY,JSON.stringify(reports));
+    return true;
+  } catch(e) {
+    toast("Browser storage is full. Export your reports and use smaller photos.");
+    return false;
   }
 }
+function escapeHTML(value){
+  return String(value ?? "").replace(/[&<>"']/g, c => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  }[c]));
+}
+function localDate(){
+  return new Date().toLocaleString();
+}
+function statusClass(status){
+  if(status==="Resolved") return "resolved";
+  if(status==="In Progress") return "progress";
+  return "pending";
+}
+function priorityClass(priority){
+  return String(priority).toLowerCase();
+}
+function priorityText(priority){
+  if(priority==="High") return t("priorityHigh");
+  if(priority==="Low") return t("priorityLow");
+  return t("priorityMedium");
+}
+function render(){
+  $("total").textContent=reports.length;
+  $("pending").textContent=reports.filter(r=>r.status==="Pending").length;
+  $("progress").textContent=reports.filter(r=>r.status==="In Progress").length;
+  $("resolved").textContent=reports.filter(r=>r.status==="Resolved").length;
 
-function escapeHTML(value) {
-  return String(value ?? "").replace(/[&<>"']/g, function (char) {
-    return {
-      "&": "&amp;",
-      "<": "&lt;",
-      ">": "&gt;",
-      '"': "&quot;",
-      "'": "&#39;"
-    }[char];
+  const query=$("search").value.trim().toLowerCase();
+  const status=$("statusFilter").value;
+  const category=$("categoryFilter").value;
+  const filtered=reports.filter(r=>{
+    const searchable=[r.id,r.location,r.category,r.description].join(" ").toLowerCase();
+    return (!query||searchable.includes(query)) &&
+      (status==="All"||r.status===status) &&
+      (category==="All"||r.category===category);
   });
-}
 
-function initMap() {
-  if (typeof L === "undefined") {
-    document.getElementById("map").innerHTML =
-      "<p style='padding:20px'>Map needs an internet connection to load.</p>";
+  if(!filtered.length){
+    $("reportList").innerHTML='<div class="empty">'+escapeHTML(t("noReports"))+'</div>';
     return;
   }
-
-  map = L.map("map").setView([20.5937, 78.9629], 5);
-
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-  }).addTo(map);
-
-  map.on("click", function (event) {
-    const lat = event.latlng.lat.toFixed(6);
-    const lng = event.latlng.lng.toFixed(6);
-
-    document.getElementById("report-lat").value = lat;
-    document.getElementById("report-lng").value = lng;
-  });
-
-  refreshMarkers();
+  $("reportList").innerHTML=filtered.map(r=>{
+    const lat=r.lat, lon=r.lon;
+    const mapURL=(lat!=null&&lon!=null)
+      ?`https://www.openstreetmap.org/?mlat=${encodeURIComponent(lat)}&mlon=${encodeURIComponent(lon)}#map=18/${encodeURIComponent(lat)}/${encodeURIComponent(lon)}`
+      :`https://www.openstreetmap.org/search?query=${encodeURIComponent(r.location)}`;
+    return `<article class="issue">
+      <div class="issue-top">
+        <div><small>${escapeHTML(r.id)} · ${escapeHTML(r.date)}</small>
+        <h3>${escapeHTML(categoryEmoji(r.category))} ${escapeHTML(r.category)}</h3></div>
+        <div class="actions">
+          <span class="tag ${statusClass(r.status)}">${escapeHTML(r.status)}</span>
+          <span class="tag ${priorityClass(r.priority)}">${escapeHTML(priorityText(r.priority))}</span>
+        </div>
+      </div>
+      <p>📍 <strong>${escapeHTML(r.location)}</strong></p>
+      <p>${escapeHTML(r.description)}</p>
+      ${r.photo?`<img src="${r.photo}" alt="Photo of reported ${escapeHTML(r.category)}">`:""}
+      ${r.afterPhoto?`<p><strong>${escapeHTML(t("photoAfter"))}</strong></p><img src="${r.afterPhoto}" alt="After repair photo">`:""}
+      ${lat!=null&&lon!=null?`<p>GPS: ${escapeHTML(lat)}, ${escapeHTML(lon)}</p>`:""}
+      ${r.audioName?`<p>🎙️ ${escapeHTML(r.audioName)} (recording downloaded separately)</p>`:""}
+      <div class="issue-actions">
+        <button class="secondary" data-map="${escapeHTML(r.id)}">🗺️ ${escapeHTML(t("map"))}</button>
+        <button class="secondary" data-status="${escapeHTML(r.id)}">🔄 ${escapeHTML(t("next"))}</button>
+        <button class="red" data-delete="${escapeHTML(r.id)}">🗑️ ${escapeHTML(t("delete"))}</button>
+      </div>
+    </article>`;
+  }).join("");
 }
-
-function refreshMarkers() {
-  if (!map) return;
-
-  reportMarkers.forEach(marker => map.removeLayer(marker));
-  reportMarkers = [];
-
-  reports.forEach(report => {
-    if (!Number.isFinite(Number(report.lat)) ||
-        !Number.isFinite(Number(report.lng))) return;
-
-    const marker = L.marker([Number(report.lat), Number(report.lng)])
-      .addTo(map)
-      .bindPopup(
-        "<strong>" + escapeHTML(report.title) + "</strong><br>" +
-        escapeHTML(report.category) + "<br>Status: " +
-        escapeHTML(report.status) + "<br>" +
-        escapeHTML(report.address || "Location reported")
-      );
-
-    reportMarkers.push(marker);
-  });
+function categoryEmoji(category){
+  return {"Pothole":"🕳️","Streetlight":"💡","Garbage":"🗑️","Waterlogging":"🌊","Open drain":"⚠️","Traffic signal":"🚦","Fallen object":"🌳","Other":"📍"}[category]||"📍";
 }
-
-function centerMap() {
-  if (map) map.setView([20.5937, 78.9629], 5);
-}
-
-function getLocation() {
-  const status = document.getElementById("gps-status");
-
-  if (!navigator.geolocation) {
-    status.textContent = "GPS is not supported by this browser.";
-    return;
-  }
-
-  status.textContent = "Requesting location permission...";
-
-  navigator.geolocation.getCurrentPosition(
-    function (position) {
-      currentPosition = {
-        lat: position.coords.latitude,
-        lng: position.coords.longitude
-      };
-
-      document.getElementById("my-lat").value = currentPosition.lat.toFixed(6);
-      document.getElementById("my-lng").value = currentPosition.lng.toFixed(6);
-      status.textContent = "Location detected successfully.";
-
-      if (map) {
-        map.setView([currentPosition.lat, currentPosition.lng], 15);
-
-        if (userMarker) map.removeLayer(userMarker);
-
-        userMarker = L.marker([
-          currentPosition.lat,
-          currentPosition.lng
-        ]).addTo(map).bindPopup("Your current location");
-
-        userMarker.openPopup();
-      }
-    },
-    function (error) {
-      const messages = {
-        1: "Location permission denied. Allow location in browser settings.",
-        2: "Location is currently unavailable.",
-        3: "Location request timed out. Try again."
-      };
-
-      status.textContent = messages[error.code] || "Unable to get location.";
-    },
-    { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
-  );
-}
-
-function useMyLocation() {
-  if (!currentPosition) {
-    getLocation();
-    alert("Allow location access, then press this button again.");
-    return;
-  }
-
-  document.getElementById("report-lat").value = currentPosition.lat.toFixed(6);
-  document.getElementById("report-lng").value = currentPosition.lng.toFixed(6);
-}
-
-document.getElementById("photo").addEventListener("change", function () {
-  const file = this.files[0];
-  const preview = document.getElementById("preview");
-
-  photoData = "";
-
-  if (!file) {
-    preview.style.display = "none";
-    return;
-  }
-
-  if (!file.type.startsWith("image/")) {
-    alert("Please select an image.");
-    this.value = "";
-    return;
-  }
-
-  if (file.size > 700000) {
-    alert("Please choose an image smaller than 700 KB.");
-    this.value = "";
-    preview.style.display = "none";
-    return;
-  }
-
-  const reader = new FileReader();
-
-  reader.onload = function () {
-    photoData = reader.result;
-    preview.src = photoData;
-    preview.style.display = "block";
+function applyLanguage(){
+  const keys={
+    tagline:"tagline",heroTitle:"heroTitle",heroText:"heroText",
+    totalLabel:"total",pendingLabel:"pending",progressLabel:"progress",resolvedLabel:"resolved",
+    formTitle:"form",categoryLabel:"category",locationLabel:"location",
+    coordinatesLabel:"coordinates",priorityLabel:"priority",descriptionLabel:"description",
+    photoLabel:"photo",afterLabel:"after",submitBtn:"submit",listTitle:"list",
+    storageHint:"storage",search:"search",mapTitle:"mapTitle",mapHint:"mapHint",
+    audioTitle:"audioTitle",audioHelp:"audioHelp",footerText:"footer",
+    gpsBtn:"gps",mapBtn:"findMap",speechBtn:"speak",voiceBtn:"record",
+    downloadAudio:"download",exportBtn:"export",clearFilters:"clear",mapAllBtn:"viewMap",
+    safetyNotice:"safety"
   };
-
-  reader.readAsDataURL(file);
+  Object.entries(keys).forEach(([id,key])=>{
+    const el=$(id); if(el) el.textContent=t(key);
+  });
+  $("statusFilter").options[0].textContent=t("all");
+  $("categoryFilter").options[0].textContent=t("allCats");
+  $("search").placeholder=t("search");
+  $("reportForm").querySelectorAll("select option").forEach(o=>{
+    if(o.value==="High")o.textContent="🔴 "+t("priorityHigh")+" — "+(currentLang==="en"?"immediate safety risk":"");
+    if(o.value==="Medium")o.textContent="🟠 "+t("priorityMedium");
+    if(o.value==="Low")o.textContent="🟢 "+t("priorityLow");
+  });
+  render();
+}
+function compressImage(file){
+  return new Promise((resolve,reject)=>{
+    if(!file) return resolve("");
+    if(!file.type.startsWith("image/")) return reject(new Error("Not an image"));
+    const reader=new FileReader();
+    reader.onerror=()=>reject(new Error("Read failed"));
+    reader.onload=()=>{
+      const img=new Image();
+      img.onerror=()=>reject(new Error("Image failed"));
+      img.onload=()=>{
+        const max=1000, scale=Math.min(1,max/Math.max(img.width,img.height));
+        const canvas=document.createElement("canvas");
+        canvas.width=Math.round(img.width*scale);
+        canvas.height=Math.round(img.height*scale);
+        canvas.getContext("2d").drawImage(img,0,0,canvas.width,canvas.height);
+        resolve(canvas.toDataURL("image/jpeg",0.72));
+      };
+      img.src=reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+$("photo").addEventListener("change",async e=>{
+  try{
+    selectedPhoto=await compressImage(e.target.files[0]);
+    $("photoPreview").src=selectedPhoto;
+    $("photoPreview").hidden=!selectedPhoto;
+  }catch(err){selectedPhoto="";toast(t("photoError"));}
+});
+$("afterPhoto").addEventListener("change",async e=>{
+  try{selectedAfterPhoto=await compressImage(e.target.files[0]);}
+  catch(err){selectedAfterPhoto="";toast(t("photoError"));}
 });
 
-document.getElementById("report-form").addEventListener("submit", function (event) {
-  event.preventDefault();
+$("gpsBtn").addEventListener("click",()=>{
+  if(!navigator.geolocation){toast(t("gpsError"));return;}
+  $("gpsStatus").textContent="Requesting location permission…";
+  navigator.geolocation.getCurrentPosition(pos=>{
+    lastCoords={lat:pos.coords.latitude,lon:pos.coords.longitude};
+    $("coordinates").value=lastCoords.lat.toFixed(6)+", "+lastCoords.lon.toFixed(6);
+    if(!$("location").value.trim())$("location").value="GPS location";
+    $("gpsStatus").textContent=t("gpsSuccess");
+    updateMap(lastCoords.lat,lastCoords.lon);
+    toast(t("gpsSuccess"));
+  },()=>{ $("gpsStatus").textContent=t("gpsError");toast(t("gpsError")); },
+  {enableHighAccuracy:true,timeout:12000,maximumAge:30000});
+});
+function updateMap(lat,lon){
+  const delta=0.008;
+  $("mapFrame").src=`https://www.openstreetmap.org/export/embed.html?bbox=${lon-delta}%2C${lat-delta}%2C${lon+delta}%2C${lat+delta}&layer=mapnik&marker=${lat}%2C${lon}`;
+  $("openMap").href=`https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}#map=17/${lat}/${lon}`;
+}
+$("mapBtn").addEventListener("click",()=>{
+  if(lastCoords){updateMap(lastCoords.lat,lastCoords.lon);return;}
+  const query=$("location").value.trim();
+  if(!query){toast(t("needLocation"));return;}
+  const url="https://www.openstreetmap.org/search?query="+encodeURIComponent(query);
+  $("openMap").href=url;
+  window.open(url,"_blank","noopener,noreferrer");
+});
+$("mapAllBtn").addEventListener("click",()=>{
+  const withGPS=reports.filter(r=>r.lat!=null&&r.lon!=null);
+  if(!withGPS.length){toast(t("mapEmpty"));return;}
+  const r=withGPS[withGPS.length-1];
+  updateMap(r.lat,r.lon);
+  $("mapTitle").scrollIntoView({behavior:"smooth",block:"start"});
+});
 
-  const latText = document.getElementById("report-lat").value.trim();
-  const lngText = document.getElementById("report-lng").value.trim();
-
-  const lat = latText === "" ? null : Number(latText);
-  const lng = lngText === "" ? null : Number(lngText);
-
-  if ((lat === null) !== (lng === null)) {
-    alert("Enter both latitude and longitude, or leave both blank.");
-    return;
-  }
-
-  if (lat !== null &&
-      (!Number.isFinite(lat) || !Number.isFinite(lng) ||
-       lat < -90 || lat > 90 || lng < -180 || lng > 180)) {
-    alert("Please enter valid GPS coordinates.");
-    return;
-  }
-
-  const report = {
-    id: Date.now().toString() + Math.random().toString(36).slice(2, 7),
-    title: document.getElementById("title").value.trim(),
-    category: document.getElementById("category").value,
-    priority: document.getElementById("priority").value,
-    address: document.getElementById("address").value.trim(),
-    lat: lat,
-    lng: lng,
-    description: document.getElementById("description").value.trim(),
-    photo: photoData,
-    status: "Open",
-    createdAt: new Date().toISOString()
+const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+$("speechBtn").addEventListener("click",()=>{
+  if(!SpeechRecognition){toast(t("noSpeech"));return;}
+  if(recognition){try{recognition.stop();}catch(e){}}
+  recognition=new SpeechRecognition();
+  recognition.lang=({en:"en-IN",hi:"hi-IN",mr:"mr-IN",kn:"kn-IN",ta:"ta-IN",te:"te-IN"})[currentLang]||"en-IN";
+  recognition.interimResults=false;
+  recognition.maxAlternatives=1;
+  recognition.onstart=()=>{$("voiceStatus").textContent=t("listening");};
+  recognition.onresult=e=>{
+    const spoken=e.results[0][0].transcript;
+    $("description").value=($("description").value+" "+spoken).trim();
+    $("voiceStatus").textContent=spoken;
   };
+  recognition.onerror=()=>{$("voiceStatus").textContent=t("speechError");};
+  recognition.onend=()=>{if($("voiceStatus").textContent===t("listening"))$("voiceStatus").textContent="";};
+  try{recognition.start();}catch(e){toast(t("speechError"));}
+});
 
+$("voiceBtn").addEventListener("click",async()=>{
+  if(isRecording){
+    mediaRecorder.stop();
+    isRecording=false;
+    $("voiceBtn").textContent=t("record");
+    return;
+  }
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia||!window.MediaRecorder){
+    toast(t("noMic"));return;
+  }
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+    audioChunks=[];
+    mediaRecorder=new MediaRecorder(stream);
+    mediaRecorder.ondataavailable=e=>{if(e.data.size)audioChunks.push(e.data);};
+    mediaRecorder.onstop=()=>{
+      audioBlob=new Blob(audioChunks,{type:mediaRecorder.mimeType||"audio/webm"});
+      if(audioUrl)URL.revokeObjectURL(audioUrl);
+      audioUrl=URL.createObjectURL(audioBlob);
+      $("audioPlayer").src=audioUrl;
+      $("audioPlayer").style.display="block";
+      $("downloadAudio").hidden=false;
+      $("voiceStatus").textContent=t("recordDone");
+      stream.getTracks().forEach(track=>track.stop());
+      toast(t("recordDone"));
+    };
+    mediaRecorder.start();
+    isRecording=true;
+    $("voiceBtn").textContent=t("stop");
+    $("voiceStatus").textContent=t("recording");
+  }catch(e){toast(t("noMic"));}
+});
+$("downloadAudio").addEventListener("click",()=>{
+  if(!audioUrl)return;
+  const a=document.createElement("a");
+  a.href=audioUrl;a.download="roadguard-voice-report.webm";a.click();
+});
+
+$("reportForm").addEventListener("submit",e=>{
+  e.preventDefault();
+  const location=$("location").value.trim();
+  const description=$("description").value.trim();
+  if(!location){toast(t("needLocation"));return;}
+  if(!description){toast(t("needDescription"));return;}
+  const duplicate=reports.some(r=>r.location.toLowerCase()===location.toLowerCase()&&r.category===$("category").value&&r.status!=="Resolved");
+  if(duplicate&&!confirm(t("duplicate")+"\nSubmit anyway?"))return;
+
+  const report={
+    id:"RG-"+Date.now().toString(36).toUpperCase(),
+    category:$("category").value,
+    location,
+    description,
+    priority:$("priority").value,
+    status:"Pending",
+    date:localDate(),
+    lat:lastCoords?lastCoords.lat:null,
+    lon:lastCoords?lastCoords.lon:null,
+    photo:selectedPhoto,
+    afterPhoto:selectedAfterPhoto,
+    audioName:audioBlob?"Voice recording downloaded separately":""
+  };
   reports.unshift(report);
-  saveReports();
-  refreshMarkers();
-  renderReports();
-
-  this.reset();
-  photoData = "";
-  document.getElementById("preview").style.display = "none";
-
-  alert("Report saved in this browser! For now, it is not shared with other users.");
-
-  document.getElementById("reports").scrollIntoView({ behavior: "smooth" });
+  if(!safeSave()){reports.shift();return;}
+  $("reportForm").reset();
+  selectedPhoto="";selectedAfterPhoto="";lastCoords=null;
+  $("photoPreview").hidden=true;
+  $("coordinates").value="";
+  $("gpsStatus").textContent="";
+  render();
+  toast(t("submitted"));
 });
-
-function renderReports() {
-  const query = document.getElementById("search").value.toLowerCase().trim();
-  const category = document.getElementById("filter-category").value;
-  const status = document.getElementById("filter-status").value;
-
-  const filtered = reports.filter(report => {
-    const text = [
-      report.title,
-      report.category,
-      report.address,
-      report.description
-    ].join(" ").toLowerCase();
-
-    return text.includes(query) &&
-      (!category || report.category === category) &&
-      (!status || report.status === status);
-  });
-
-  document.getElementById("total").textContent = reports.length;
-  document.getElementById("open-count").textContent =
-    reports.filter(r => r.status === "Open").length;
-  document.getElementById("progress-count").textContent =
-    reports.filter(r => r.status === "In Progress").length;
-  document.getElementById("resolved-count").textContent =
-    reports.filter(r => r.status === "Resolved").length;
-
-  const list = document.getElementById("report-list");
-  const empty = document.getElementById("empty-message");
-
-  list.innerHTML = "";
-  empty.style.display = filtered.length ? "none" : "block";
-
-  filtered.forEach(report => {
-    const article = document.createElement("article");
-    article.className = "report";
-
-    const title = document.createElement("h3");
-    title.textContent = report.title;
-
-    const tags = document.createElement("div");
-    tags.innerHTML =
-      '<span class="tag">' + escapeHTML(report.category) + '</span>' +
-      '<span class="tag">' + escapeHTML(report.priority) + ' priority</span>' +
-      '<span class="tag">' + escapeHTML(report.status) + '</span>';
-
-    const description = document.createElement("p");
-    description.textContent = report.description || "No extra details provided.";
-
-    const address = document.createElement("p");
-    address.textContent = "📍 " + (report.address || "No landmark added");
-
-    const date = document.createElement("p");
-    date.className = "small";
-    date.textContent = "Reported: " + new Date(report.createdAt).toLocaleString();
-
-    article.append(title, tags, description, address, date);
-
-    if (report.photo) {
-      const img = document.createElement("img");
-      img.src = report.photo;
-      img.alt = "Uploaded hazard";
-      img.style.cssText = "max-width:100%;max-height:200px;border-radius:10px";
-      article.appendChild(img);
-    }
-
-    if (report.lat !== null && report.lng !== null) {
-      const coords = document.createElement("p");
-      coords.className = "small";
-      coords.textContent = "GPS: " + report.lat + ", " + report.lng;
-      article.appendChild(coords);
-
-      const mapLink = document.createElement("a");
-      mapLink.href = "https://www.openstreetmap.org/?mlat=" +
-        encodeURIComponent(report.lat) + "&mlon=" +
-        encodeURIComponent(report.lng) + "#map=17/" +
-        encodeURIComponent(report.lat) + "/" + encodeURIComponent(report.lng);
-      mapLink.target = "_blank";
-      mapLink.rel = "noopener noreferrer";
-      mapLink.textContent = "Open location on map";
-      article.appendChild(mapLink);
-    }
-
-    const statusButton = document.createElement("button");
-    statusButton.textContent = "Change status";
-    statusButton.onclick = function () {
-      const options = ["Open", "In Progress", "Resolved"];
-      const next = options[(options.indexOf(report.status) + 1) % options.length];
-      report.status = next;
-      saveReports();
-      renderReports();
-      refreshMarkers();
-    };
-
-    const deleteButton = document.createElement("button");
-    deleteButton.textContent = "Delete report";
-    deleteButton.className = "secondary";
-    deleteButton.onclick = function () {
-      if (!confirm("Delete this report from this browser?")) return;
-      reports = reports.filter(r => r.id !== report.id);
-      saveReports();
-      renderReports();
-      refreshMarkers();
-    };
-
-    article.append(statusButton, deleteButton);
-    list.appendChild(article);
-  });
-}
-
-function exportReports() {
-  const blob = new Blob(
-    [JSON.stringify(reports, null, 2)],
-    { type: "application/json" }
-  );
-
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = "roadguard-reports.json";
-  link.click();
-  URL.revokeObjectURL(url);
-}
-
-function clearReports() {
-  if (!confirm("Delete ALL saved reports from this browser? Export first if needed.")) return;
-
-  reports = [];
-  saveReports();
-  renderReports();
-  refreshMarkers();
-}
-
-initMap();
-renderReports();
+$("reportList").addEventListener("click",e=>{
+  const mapBtn=e.target.closest("[data-map]");
+  const statusBtn=e.target.closest("[data-status]");
+  const deleteBtn=e.target.closest("[data-delete]");
+  if(mapBtn){
+    const r=reports.find(r=>r.id===mapBtn.dataset.map);
+    if(!r)return;
+    if(r.lat!=null&&r.lon!=null)updateMap(r.lat,r.lon);
+    const url=(r.lat!=null&&r.lon!=null)
+      ?`https://www.openstreetmap.org/?mlat=${r.lat}&mlon=${r.lon}#map=18/${r.lat}/${r.lon}`
+      :`https://www.openstreetmap.org/search?query=${encodeURIComponent(r.location)}`;
+    $("openMap").href=url;
+    window.open(url,"_blank","noopener,noreferrer");
+  }
+  if(statusBtn){
+    const r=reports.find(r=>r.id===statusBtn.dataset.status);
+    if(!r)return;
+    const states=["Pending","In Progress","Resolved"];
+    r.status=states[(states.indexOf(r.status)+1)%states.length];
+    safeSave();render();toast(t("statusChanged"));
+  }
+  if(deleteBtn){
+    const r=reports.find(r=>r.id===deleteBtn.dataset.delete);
+    if(!r||!confirm("Delete report "+r.id+"?"))return;
+    reports=reports.filter(x=>x.id!==r.id);
+    safeSave();render();toast(t("deleted"));
+  }
+});
+["search","statusFilter","categoryFilter"].forEach(id=>$(id).addEventListener(id==="search"?"input":"change",render));
+$("clearFilters").addEventListener("click",()=>{
+  $("search").value="";$("statusFilter").value="All";$("categoryFilter").value="All";render();
+});
+$("exportBtn").addEventListener("click",()=>{
+  const blob=new Blob([JSON.stringify(reports,null,2)],{type:"application/json"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");a.href=url;a.download="roadguard-reports.json";a.click();
+  URL.revokeObjectURL(url);toast(t("exportDone"));
+});
+$("language").addEventListener("change",()=>{
+  currentLang=$("language").value;
+  applyLanguage();
+});
+applyLanguage();
 </script>
 </body>
 </html>
