@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RoadGuard | Road Hazard Tracker</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f3f6fb;
+            color: #1e293b;
+        }
+
+        header {
+            background: #123b5d;
+            color: white;
+            padding: 22px 8%;
+        }
+
+        header h1 {
+            margin: 0;
+        }
+
+        header p {
+            margin-bottom: 0;
+        }
+
+        main {
+            max-width: 1000px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .hero, .card {
+            background: white;
+            padding: 24px;
+            border-radius: 14px;
+            margin-bottom: 22px;
+            box-shadow: 0 3px 12px #0000000d;
+        }
+
+        .hero {
+            background: #dcecf8;
+        }
+
+        h2 {
+            margin-top: 0;
+        }
+
+        form {
+            display: grid;
+            gap: 14px;
+        }
+
+        input, select, textarea, button {
+            width: 100%;
+            padding: 12px;
+            border-radius: 7px;
+            border: 1px solid #cbd5e1;
+            font-size: 15px;
+        }
+
+        button {
+            background: #1264a3;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background: #0c4b7c;
+        }
+
+        .stats {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 22px;
+        }
+
+        .stat {
+            background: white;
+            padding: 16px;
+            border-radius: 10px;
+            flex: 1;
+            min-width: 130px;
+        }
+
+        .issue {
+            border: 1px solid #e2e8f0;
+            padding: 16px;
+            margin-top: 12px;
+            border-radius: 10px;
+        }
+
+        .status {
+            color: #9a3412;
+            font-weight: bold;
+        }
+
+        footer {
+            text-align: center;
+            padding: 24px;
+            color: #64748b;
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>🛣️ RoadGuard</h1>
+    <p>Report road hazards. Make streets safer.</p>
+</header>
+
+<main>
+    <section class="hero">
+        <h2>Your Street. Your Voice.</h2>
+        <p>Help your community by reporting potholes,
+        damaged roads, garbage and broken streetlights.</p>
+    </section>
+
+    <section class="card">
+        <h2>📢 Report a Hazard</h2>
+
+        <form id="issueForm">
+            <select id="type" required>
+                <option value="">Choose issue type</option>
+                <option>Pothole</option>
+                <option>Damaged Road</option>
+                <option>Broken Streetlight</option>
+                <option>Garbage</option>
+                <option>Other</option>
+            </select>
+
+            <input id="location" type="text"
+                placeholder="Enter street or location" required>
+
+            <textarea id="description"
+                placeholder="Describe the problem"
+                rows="3" required></textarea>
+
+            <button type="submit">Submit Report</button>
+        </form>
+    </section>
+
+    <section class="stats">
+        <div class="stat">
+            <strong>Total Reports</strong>
+            <h2 id="total">0</h2>
+        </div>
+        <div class="stat">
+            <strong>Pending</strong>
+            <h2 id="pending">0</h2>
+        </div>
+        <div class="stat">
+            <strong>Resolved</strong>
+            <h2 id="resolved">0</h2>
+        </div>
+    </section>
+
+    <section class="card">
+        <h2>📍 Reported Issues</h2>
+
+        <input id="search" type="text"
+            placeholder="Search by location..."
+            style="margin-bottom: 12px;">
+
+        <div id="issueList">
+            <p>No reports yet. Be the first to report!</p>
+        </div>
+    </section>
+</main>
+
+<footer>
+    RoadGuard Hackathon Project | Building Safer Streets
+</footer>
+
+<script>
+    let issues = JSON.parse(
+        localStorage.getItem("roadguardIssues") || "[]"
+    );
+
+    const form = document.getElementById("issueForm");
+    const issueList = document.getElementById("issueList");
+
+    function saveIssues() {
+        localStorage.setItem(
+            "roadguardIssues", JSON.stringify(issues)
+        );
+    }
+
+    function renderIssues() {
+        const query = document.getElementById("search")
+            .value.toLowerCase();
+
+        const filtered = issues.filter(issue =>
+            issue.location.toLowerCase().includes(query)
+        );
+
+        document.getElementById("total").textContent =
+            issues.length;
+
+        document.getElementById("pending").textContent =
+            issues.filter(i => i.status === "Pending").length;
+
+        document.getElementById("resolved").textContent =
+            issues.filter(i => i.status === "Resolved").length;
+
+        issueList.innerHTML = "";
+
+        if (filtered.length === 0) {
+            issueList.innerHTML = "<p>No matching reports found.</p>";
+            return;
+        }
+
+        filtered.forEach(issue => {
+            const card = document.createElement("div");
+            card.className = "issue";
+
+            const title = document.createElement("h3");
+            title.textContent = "⚠️ " + issue.type;
+
+            const place = document.createElement("p");
+            place.textContent = "📍 " + issue.location;
+
+            const description = document.createElement("p");
+            description.textContent = issue.description;
+
+            const status = document.createElement("p");
+            status.className = "status";
+            status.textContent = "Status: " + issue.status;
+
+            const update = document.createElement("button");
+            update.textContent = "Update Status";
+
+            update.onclick = function() {
+                if (issue.status === "Pending") {
+                    issue.status = "In Progress";
+                } else if (issue.status === "In Progress") {
+                    issue.status = "Resolved";
+                } else {
+                    issue.status = "Pending";
+                }
+
+                saveIssues();
+                renderIssues();
+            };
+
+            card.append(title, place, description, status, update);
+            issueList.appendChild(card);
+        });
+    }
+
+    form.addEventListener("submit", function(event) {
+        event.preventDefault();
+
+        issues.unshift({
+            type: document.getElementById("type").value,
+            location: document.getElementById("location").value.trim(),
+            description: document.getElementById("description").value.trim(),
+            status: "Pending"
+        });
+
+        saveIssues();
+        form.reset();
+        renderIssues();
+
+        alert("Report submitted successfully!");
+    });
+
+    document.getElementById("search").addEventListener(
+        "input", renderIssues
+    );
+
+    renderIssues();
+</script>
+
+</body>
+</html>
